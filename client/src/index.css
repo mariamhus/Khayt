@@ -1,0 +1,74 @@
+@import "tailwindcss";
+@import "@fontsource-variable/fraunces";
+@import "@fontsource-variable/dm-sans";
+@import "@fontsource-variable/noto-kufi-arabic";
+
+@theme {
+  --font-sans: "DM Sans Variable", "Noto Kufi Arabic Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fraunces Variable", "Noto Kufi Arabic Variable", ui-serif, Georgia, serif;
+  --color-linen: #f3eee4;
+  --color-card: #fbf8f2;
+  --color-ink: #1f1b17;
+  --color-soft: #6a625a;
+  --color-faint: #9a9189;
+  --color-line: #e2d9c9;
+  --color-line-strong: #cfc3ae;
+  --color-clay: #b5573a;
+  --color-clay-soft: #f4e2da;
+  --color-nile: #2f5d62;
+  --color-nile-soft: #e0ebe9;
+  --color-gold: #a8782c;
+  --color-gold-soft: #f5ead4;
+}
+
+:root {
+  background: var(--color-linen);
+  color: var(--color-ink);
+  color-scheme: light;
+}
+
+:root[lang="ar"] {
+  --font-sans: "Noto Kufi Arabic Variable", "DM Sans Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Noto Kufi Arabic Variable", "Fraunces Variable", ui-serif, serif;
+}
+
+body {
+  margin: 0;
+  background: var(--color-linen);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.num { font-variant-numeric: tabular-nums; }
+
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold whitespace-nowrap transition select-none disabled:cursor-not-allowed disabled:opacity-45 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-clay;
+}
+
+@layer components {
+  .btn-dark { @apply btn bg-ink text-linen hover:bg-[#35302a]; }
+  .btn-clay { @apply btn bg-clay text-white hover:bg-[#9c4930]; }
+  .btn-ghost { @apply btn border border-line-strong bg-card text-ink hover:bg-white; }
+  .btn-quiet { @apply btn px-3 text-soft hover:bg-black/[0.05] hover:text-ink; }
+  .btn-danger { @apply btn border border-clay/30 bg-card text-clay hover:bg-clay-soft; }
+  .card { @apply rounded-3xl border border-line bg-card; }
+  .field { @apply w-full rounded-2xl border border-line-strong bg-white px-4 py-2.5 text-sm text-ink outline-none transition placeholder:text-faint focus:border-clay focus:ring-3 focus:ring-clay/15 aria-[invalid=true]:border-clay; }
+  .label { @apply mb-1.5 block text-[13px] font-medium text-soft; }
+  .ring-focus { @apply focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-clay; }
+  .display { @apply font-display tracking-tight; font-variation-settings: "opsz" 144, "SOFT" 50; }
+  :root[lang="ar"] .display { @apply font-bold tracking-normal; }
+  .eyebrow { @apply text-xs font-semibold tracking-[0.2em] text-clay uppercase; }
+  :root[lang="ar"] .eyebrow { @apply tracking-normal; }
+}
+
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes drawer { from { transform: translateX(var(--from, 100%)); } to { transform: none; } }
+.rise { animation: rise 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.drawer-in { animation: drawer 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+:root[dir="rtl"] .drawer-in { --from: -100%; }
+@media (prefers-reduced-motion: reduce) { .rise, .drawer-in { animation: none; } }
+
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0.28s; }
