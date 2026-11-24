@@ -14,6 +14,8 @@ const H = (W * 130) / 100;
 const COLS = 26;
 const ROWS = 34;
 const RAIL_Y = 1.55;
+// Lifts the garment so its shoulder line sits over the hanger arms.
+const GARMENT_Y = 0.1;
 
 function hangerGeometry() {
   const points = [
@@ -91,7 +93,12 @@ function Piece({ product, index, spacing, state, onPick, reduced, hanger }: { pr
     return values;
   }, [built]);
   const puff = product.garment === "scarf" ? 0.05 : product.fabric === "silk" ? 0.1 : 0.16;
+  const base = product.colors[0]!;
+  // Real photos already carry their own highlights; a strong white sheen on top washes them out.
+  const isPhoto = Boolean(product.images?.[base.key]);
   const materials = useMemo(() => {
+    const sheen = isPhoto ? Math.min(feel.sheen, 0.25) : feel.sheen;
+    const sheenColor = isPhoto ? new THREE.Color(base.hex).lerp(new THREE.Color("#ffffff"), 0.3) : new THREE.Color("#ffffff");
     const make = (side: THREE.Side, tone: number) =>
       new THREE.MeshPhysicalMaterial({
         map: built.map,
@@ -99,15 +106,16 @@ function Piece({ product, index, spacing, state, onPick, reduced, hanger }: { pr
         normalScale: new THREE.Vector2(0.35 + feel.weave * 0.5, 0.35 + feel.weave * 0.5),
         alphaTest: 0.5,
         side,
-        roughness: feel.roughness,
+        roughness: isPhoto ? Math.max(feel.roughness, 0.8) : feel.roughness,
+        specularIntensity: isPhoto ? 0.35 : 1,
         metalness: 0,
-        sheen: feel.sheen,
+        sheen,
         sheenRoughness: product.fabric === "silk" ? 0.3 : 0.8,
-        sheenColor: new THREE.Color("#ffffff"),
+        sheenColor,
         color: new THREE.Color(tone, tone, tone),
       });
     return { front: make(THREE.FrontSide, 1), back: make(THREE.BackSide, 0.82) };
-  }, [built, feel.weave, feel.roughness, feel.sheen, product.fabric]);
+  }, [built, feel.weave, feel.roughness, feel.sheen, product.fabric, isPhoto, base.hex]);
   const swing = useRef({ angle: 0, velocity: 0, lift: 0, turn: 0, energy: 0 });
   const phase = index * 1.7;
 
@@ -193,11 +201,12 @@ function Piece({ product, index, spacing, state, onPick, reduced, hanger }: { pr
   return (
     <>
       <group ref={group}>
-        <mesh geometry={hanger} position={[0, -0.02, 0.02]}>
+        {/* Hanger sits inside the garment: arms hidden by the shoulders, only the hook and neck show. */}
+        <mesh geometry={hanger} position={[0, -0.02, -0.015]} scale={[product.garment === "trousers" ? 0.62 : 1, 1, 1]}>
           <meshStandardMaterial color="#8c6a43" roughness={0.45} metalness={0.6} />
         </mesh>
-        <mesh geometry={front} material={materials.front} position={[0, -0.06, 0]} {...events} />
-        <mesh geometry={back} material={materials.back} position={[0, -0.06, 0]} {...events} />
+        <mesh geometry={front} material={materials.front} position={[0, GARMENT_Y, 0]} {...events} />
+        <mesh geometry={back} material={materials.back} position={[0, GARMENT_Y, 0]} {...events} />
       </group>
       <mesh position={[index * spacing, RAIL_Y - 0.36 - H - 0.62, 0]} rotation={[-Math.PI / 2, 0, 0]} scale={[1, 0.55, 1]}>
         <circleGeometry args={[0.8, 32]} />

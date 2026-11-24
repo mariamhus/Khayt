@@ -280,6 +280,51 @@ export function garmentTexture(garment: Garment, pattern: Pattern, fabric: Fabri
   return { map: texture(element, true), normal: texture(normalFrom(height.element, 2 + feel.weave * 4), false), field: distanceField(element), fieldW: FIELD_W, fieldH: FIELD_H };
 }
 
+// Fraction of the plane width the garment's shoulders should cover (hanger bar is ~54%).
+const SHOULDER_SPAN = 0.62;
+// Gap above the garment so its shoulders meet the hanger bar, not the hook.
+const TOP_GAP = 0.035;
+
+/** Trim transparent padding and locate the shoulder line of a cut-out garment photo. */
+function garmentBounds(image: HTMLImageElement) {
+  const iw = image.naturalWidth;
+  const ih = image.naturalHeight;
+  const { ctx } = canvas(iw, ih);
+  ctx.drawImage(image, 0, 0);
+  const data = ctx.getImageData(0, 0, iw, ih).data;
+  const solid = (x: number, y: number) => data[(y * iw + x) * 4 + 3]! > 40;
+  const rows: [number, number][] = [];
+  let top = -1;
+  let bottom = -1;
+  let left = iw;
+  let right = -1;
+  for (let y = 0; y < ih; y += 1) {
+    let a = -1;
+    let b = -1;
+    for (let x = 0; x < iw; x += 1)
+      if (solid(x, y)) {
+        if (a < 0) a = x;
+        b = x;
+      }
+    rows.push([a, b]);
+    if (a < 0) continue;
+    if (top < 0) top = y;
+    bottom = y;
+    left = Math.min(left, a);
+    right = Math.max(right, b);
+  }
+  if (top < 0) return { x: 0, y: 0, w: iw, h: ih, shoulder: iw, center: iw / 2 };
+  const w = right - left + 1;
+  const h = bottom - top + 1;
+  // The garment "starts" at the first row wider than a quarter of its width,
+  // skipping stray hanger hooks, tags or a mannequin neck poking out the top.
+  let start = top;
+  while (start < bottom && rows[start]![1] - rows[start]![0] < w * 0.25) start += 1;
+  const probe = rows[Math.min(bottom, start + Math.round(h * 0.06))]!;
+  const shoulder = Math.max(probe[1] - probe[0] + 1, w * 0.4);
+  return { x: left, y: start, w, h: bottom - start + 1, shoulder, center: (probe[0] + probe[1]) / 2 };
+}
+
 export async function photoTexture(url: string, fabric: Fabric): Promise<Built> {
   const image = new Image();
   image.decoding = "async";
@@ -288,10 +333,13 @@ export async function photoTexture(url: string, fabric: Fabric): Promise<Built> 
   const W = VIEW.w * 6;
   const H = VIEW.h * 6;
   const { element, ctx } = canvas(W, H);
-  const fit = Math.min(W / image.naturalWidth, H / image.naturalHeight);
-  const dw = image.naturalWidth * fit;
-  const dh = image.naturalHeight * fit;
-  ctx.drawImage(image, (W - dw) / 2, 0, dw, dh);
+  const box = garmentBounds(image);
+  // Size by the shoulder line so every garment spans the hanger the same way,
+  // but never let the full silhouette overflow the plane.
+  const fit = Math.min((W * SHOULDER_SPAN) / box.shoulder, (W * 0.94) / box.w, (H * (1 - TOP_GAP - 0.02)) / box.h);
+  const dw = box.w * fit;
+  const dh = box.h * fit;
+  ctx.drawImage(image, box.x, box.y, box.w, box.h, W / 2 - (box.center - box.x) * fit, H * TOP_GAP, dw, dh);
   const height = canvas(W, H);
   height.ctx.fillStyle = "#808080";
   height.ctx.fillRect(0, 0, W, H);
