@@ -1,54 +1,67 @@
+<div align="center">
+
 # Khayt · خيط
 
-**A clothing store you can almost touch.** Khayt is a full-stack e-commerce site for a fictional Egyptian clothing brand. Real product photos hang on a 3D rail that sways as you scroll, every product shows its actual fabric draping in real time, and the catalogue ripples like cloth when you hover. It comes with a cart, checkout, customer accounts and an admin dashboard, in English and Arabic.
+**A clothing store you can almost touch.**
 
-**Live demo:** _add your Vercel link here_. Click **Try the demo** to get your own private copy of the store. Shop in it, then open the dashboard and see your order arrive.
+A full-stack e-commerce site where clothes hang on a swinging 3D rail, every fabric drapes in a live cloth simulation, and the catalogue ripples like cloth. It comes with a real cart, checkout, accounts and an admin dashboard, in English and Arabic.
 
-> A portfolio project by [Mariam Hussein](https://www.mariam-hussein.website). The brand and products are fictional, and the product and fabric photos are AI-generated.
+[**Live demo**](https://khayt-sand.vercel.app) · [Features](#features) · [How it works](#how-the-backend-works) · [Run locally](#run-locally) · [Deploy](#deploy)
 
-![The rail](screenshots/home.png)
+![React](https://img.shields.io/badge/React_19-20232a?logo=react&logoColor=61dafb)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178c6?logo=typescript&logoColor=white)
+![three.js](https://img.shields.io/badge/three.js-000000?logo=threedotjs&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_v4-0f172a?logo=tailwindcss&logoColor=38bdf8)
+![Express](https://img.shields.io/badge/Express_5-000000?logo=express&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169e1?logo=postgresql&logoColor=white)
+![Drizzle](https://img.shields.io/badge/Drizzle_ORM-c5f74f?logo=drizzle&logoColor=black)
 
-## The creative parts
+![The 3D rail](screenshots/home.png)
 
-### 1. The rail (home page)
-- **What it is:** a three.js scene of garments on wooden hangers along a brass rail. Scrolling the page slides the rail.
-- **Swinging:** each garment is a pendulum driven by the rail's acceleration, so pieces swing when you speed up and settle when you stop. Lighter fabrics swing more than heavy ones.
-- **The cloth:** each garment is a 26 × 34 vertex mesh with a front and a back panel. A distance field computed from the photo's transparency puffs the middle out, so a flat cut-out gets real volume. It's deformed every frame with fabric-dependent waves that grow toward the hem, and lit with a physical material with fabric sheen.
-- **The look:** each colour of a product has its own transparent photo. Products without a photo fall back to a garment drawn in code, with woven texture, folds, stitching and a generated normal map.
-- **Interaction:** hovering lifts a piece toward you, and clicking opens it. Keyboard and screen-reader users get the same products as a hidden list. There's a flat fallback without WebGL.
+</div>
 
-### 2. Feel the fabric (product page)
-- **What it is:** a real cloth simulation with Verlet integration: a 38 × 38 particle grid held together by structural, shear and bending springs. It falls onto a 3D form, catches on it, and settles into folds.
-- **Each fabric behaves differently:**
-  - **Silk:** almost no bending stiffness, slippery and glossy.
-  - **Denim:** stiff and heavy.
-  - **Linen:** crisp.
-  - **Wool:** soft, with body.
-- **Real fabric:** the cloth is textured with a close-up photo of that colour's fabric (fleece, denim, satin, corduroy, crepe…).
-- **Interaction:** colours swap live. You can drag to rotate it, or press **Drop again** to replay it.
+## Try it in 30 seconds
 
-![Drapes: linen, silk, denim](screenshots/drapes.png)
+1. Open **[khayt-sand.vercel.app](https://khayt-sand.vercel.app)** and scroll. The rail slides and the clothes swing.
+2. Open any product and watch its fabric fall and settle. Switch colours or press **Drop again**.
+3. Click **Try the demo**. You get your own private copy of the store with 30 days of orders, and you're logged in as its admin.
+4. Buy something, then open the dashboard and watch your order arrive. Upload a product photo too if you like.
+5. Switch to **العربية** for the full right-to-left version.
 
-### 3. Liquid catalogue (shop)
-- Product photos sit inside an SVG with a soft shadow; drawn products get fabric-specific turbulence noise and folds.
-- Hovering a card runs a spring-damped `feDisplacementMap` ripple, so the garment wobbles like fabric and settles back.
-- It's cheap enough for a full grid on a phone, with no WebGL needed.
+> The API runs on a free server that sleeps when nobody is using it, so the very first load can take up to a minute. After that it's fast.
 
-## Store features
+## Features
 
-- **Shop:** categories, search in English and Arabic, filters (fabric, colour, size in stock), sorting, sale prices and sold-out badges.
-- **Product page:** colour and size picker with live stock per colour and size ("Only 2 left", crossed-out sold-out sizes) and related pieces.
-- **Cart:** a slide-out drawer with quantity limits and a free-delivery progress bar (free over EGP 1,500). It's saved on the device.
+### The creative parts
+
+| | |
+| --- | --- |
+| **🧥 The swinging rail** | A three.js scene of garments on wooden hangers along a brass rail. Scrolling slides the rail. Each piece is a pendulum driven by the rail's acceleration, so clothes swing when you speed up and settle when you stop, and light fabrics swing more than heavy ones. Flat product photos get real volume: a distance field built from each photo's transparency puffs the middle of the garment out, with a front and back panel lit by a physical fabric material with sheen. |
+| **🌊 Feel the fabric** | A real cloth simulation on every product page: a 38 × 38 particle grid held together by structural, shear and bending springs (Verlet integration). It falls onto a 3D form, catches on it and settles into folds. Silk slides and shines, denim is stiff and heavy, linen is crisp, wool is soft. The cloth is textured with a close-up photo of that colour's actual fabric. |
+| **💧 Liquid catalogue** | Hovering a product card runs a spring-damped SVG displacement ripple, so the garment wobbles like fabric and settles back. It needs no WebGL, so it stays smooth across a full grid on a phone. |
+
+Keyboard and screen-reader users get the rail's products as a hidden list, the 3D scenes fall back gracefully without WebGL, and reduced-motion settings are respected.
+
+### The store
+
+- **Shop:**
+  - Categories, and search in English and Arabic.
+  - Filters for fabric, colour and size in stock, plus sorting.
+  - Sale prices and sold-out badges.
+- **Product page:**
+  - Colour and size picker with live stock for every combination ("Only 2 left", crossed-out sold-out sizes).
+  - Related pieces.
+- **Cart:** a slide-out bag with quantity limits and a free-delivery progress bar. It's saved on the device.
 - **Checkout:**
-  - Delivery details with Egyptian mobile validation (Arabic digits accepted).
-  - Cash on delivery, or a demo card payment that marks the order paid.
+  - Egyptian mobile validation that accepts Arabic digits.
+  - Cash on delivery, or a demo card payment.
 - **Accounts:** register, log in, order history, and an order page with a progress tracker.
 - **Admin dashboard:**
-  - 30-day revenue chart, order count, average order, orders waiting to ship, best sellers and low stock.
-  - **Products:** create and edit with bilingual names, shape, fabric, pattern, colours, sizes and a stock grid for every colour and size, with a live preview.
-  - **Photos:** upload a cut-out photo and a fabric close-up for each colour. Images are resized to WebP in the browser, checked on the server by their real bytes (PNG, JPEG or WebP only, 64 to 4000 px), stored in Postgres and served with long-lived caching. Deleting a product that has been ordered hides it instead.
-  - **Orders:** search, status filter, and a detail view to move an order through *Pending, Paid, Shipped, Delivered*. Cancelling returns the stock.
-- **Arabic and English:** full RTL layout, Arabic fonts, translated catalogue, and Western digits.
+  - **Overview:** 30-day revenue chart, average order, orders waiting to ship, best sellers and low-stock alerts.
+  - **Products:** bilingual names, fabric, pattern, colours and sizes, with a stock grid and a live preview.
+  - **Photos:** a cut-out photo and a fabric close-up for each colour. Images are resized to WebP in the browser, checked on the server by their real bytes, and stored in Postgres.
+  - **Orders:** search, filter, and move orders through *Pending → Paid → Shipped → Delivered*. Cancelling returns the stock.
+- **Arabic and English:** full RTL layout, Arabic typography and a translated catalogue.
 
 ## Screenshots
 
@@ -56,51 +69,59 @@
 | --- | --- |
 | ![](screenshots/product.png) | ![](screenshots/shop.png) |
 
-| Another colour | Photo upload |
+| Fabrics: linen, satin, denim | Bag |
 | --- | --- |
-| ![](screenshots/product-hoodie.png) | ![](screenshots/admin-photos.png) |
+| ![](screenshots/drapes.png) | ![](screenshots/cart.png) |
 
-| Rail in motion | Bag |
-| --- | --- |
-| ![](screenshots/rail-scrolled.png) | ![](screenshots/cart.png) |
-
-| Dashboard | Orders | Product editor |
+| Dashboard | Orders | Product photos |
 | --- | --- | --- |
-| ![](screenshots/admin.png) | ![](screenshots/admin-orders.png) | ![](screenshots/admin-edit.png) |
+| ![](screenshots/admin.png) | ![](screenshots/admin-orders.png) | ![](screenshots/admin-photos.png) |
 
 | Arabic product page | Arabic dashboard | Mobile |
 | --- | --- | --- |
 | ![](screenshots/product-ar.png) | ![](screenshots/admin-ar.png) | ![](screenshots/mobile-home.png) |
+
+## Architecture
+
+```mermaid
+flowchart LR
+  B[Browser] -->|pages| V[Vercel<br/>React + three.js]
+  B -->|/api/*| V
+  V -->|rewrite, same origin| R[Render<br/>Express API]
+  R -->|SQL over TLS| N[(Neon<br/>PostgreSQL)]
+```
+
+The browser only ever talks to Vercel. Vercel forwards `/api/*` to the API on Render, so the session cookie stays first-party and `HttpOnly`, with no cross-site cookie problems.
 
 ## Tech stack
 
 | | |
 | --- | --- |
 | **Frontend** (`client/`) | React 19, TypeScript, Vite, Tailwind CSS v4, three.js with React Three Fiber, React Router 7, TanStack Query |
-| **API** (`server/`) | Node 22, Express 5, TypeScript, Drizzle ORM, zod, jose (JWT), bcryptjs, helmet, express-rate-limit |
-| **Database** | PostgreSQL (Neon in production). It falls back to embedded PGlite when `DATABASE_URL` isn't set. |
+| **API** (`server/`) | Node 20+, Express 5, TypeScript, Drizzle ORM, zod, jose (JWT), bcryptjs, helmet, express-rate-limit |
+| **Database** | PostgreSQL on Neon. Locally it falls back to embedded PGlite, so no database install is needed. |
 | **Tests** | Vitest and Supertest against a fresh in-memory database |
-| **Hosting** | Vercel for the frontend, Render for the API, Neon for the database |
+| **Hosting** | Vercel (frontend), Render (API), Neon (database), all on free plans |
 
 ## How the backend works
 
-- **Stores (tenants):** every product, order and user belongs to a store. The public site is the main store.
-  - **Try the demo** creates a new store with the full catalogue and 30 days of realistic orders, and logs the visitor in as its admin.
-  - The storefront and dashboard then show *their* store, so nobody can change the real catalogue.
+- **Multi-store by design:**
+  - Every product, order and user belongs to a store, and the public site is the main store.
+  - **Try the demo** creates a new store with the full catalogue and 30 days of realistic orders, so visitors can do anything without touching the real data.
   - Demo stores are deleted on logout or after 24 hours.
-- **Stock per colour and size:** stored in its own table.
-- **Checkout is one transaction:**
-  1. It locks every stock row it needs (`SELECT … FOR UPDATE`) and checks the quantities.
+- **Safe checkout in one transaction:**
+  1. It locks every stock row it needs (`SELECT … FOR UPDATE`) and checks quantities.
   2. It takes prices from the database, never from the browser.
-  3. It decrements stock and writes the order with a per-store number (`KH-10001`).
-  - If anything changed, it returns `409 cart_changed` with the exact problems, and the bag updates itself.
-- **Cancelling:** returns the items to stock. A cancelled order can't be reopened.
-- **Privacy:** a customer sees only their own orders, and admins only their own store. Another store's IDs return 404, and tests check this.
+  3. It decrements stock and writes the order with a per-store number like `KH-10001`.
+  - If something changed meanwhile, it returns `409 cart_changed` with the exact problems, and the bag fixes itself.
+- **Stock per colour and size:** stored in its own table. Cancelling an order returns its items.
+- **Privacy:** customers see only their own orders, and admins only their own store. Other stores' IDs return 404, and tests check this.
 - **Security:**
-  - `HttpOnly` session cookie, served same-origin through a Vercel rewrite.
-  - Origin check and JSON-only bodies on writes.
-  - bcrypt passwords, with login taking the same time whether or not the email exists.
-  - zod validation, rate limits and escaped searches.
+  - `HttpOnly` session cookie.
+  - Origin check and content-type checks on every write.
+  - bcrypt passwords, with constant-time login.
+  - zod validation, rate limits and escaped search.
+  - Uploaded images are verified by their real bytes.
 
 ## API
 
@@ -110,17 +131,20 @@
 | GET | `/api/auth/me` | Current user |
 | GET | `/api/meta` | Palette, sizes and shipping rules |
 | GET | `/api/products?category&fabric&color&size&q&sort&featured` | Catalogue |
-| GET | `/api/products/:slug` | Product with stock per colour and size, and related pieces |
+| GET | `/api/products/:slug` | Product with stock and related pieces |
 | POST, GET | `/api/orders` | Place an order, list my orders |
 | GET | `/api/orders/:id` | Order detail (owner or the store's admin) |
 | GET | `/api/admin/stats` | Dashboard numbers |
 | GET, POST, PUT, DELETE | `/api/admin/products[/:id]` | Manage products and stock |
-| POST | `/api/admin/images` | Upload a product photo (raw image body) |
+| POST | `/api/admin/images` | Upload a product photo |
 | GET | `/api/images/:id` | Serve an uploaded photo |
 | GET | `/api/admin/orders?status&q&page` | Orders |
-| PUT | `/api/admin/orders/:id/status` | Change status |
+| PUT | `/api/admin/orders/:id/status` | Change an order's status |
+| GET | `/api/health` | Health check |
 
 ## Run locally
+
+You need Node 20 or newer. No database setup is needed.
 
 ```bash
 npm run install:all
@@ -128,7 +152,7 @@ npm run dev:api
 npm run dev:web
 ```
 
-Open http://localhost:5173. The API runs on port 4000 with a local PGlite database, seeded on first start. The main store's admin login is `admin@khayt.shop` / `khayt2026`, unless `ADMIN_EMAIL` and `ADMIN_PASSWORD` are set.
+Open http://localhost:5173. The API runs on port 4000 with a local PGlite database that seeds itself on first start. The local admin login is `admin@khayt.shop` / `khayt2026`.
 
 ```bash
 npm test
@@ -137,16 +161,41 @@ npm run build
 
 ## Deploy
 
-1. **Neon:** create a free Postgres database and copy its connection string.
-2. **Render:** choose **New → Blueprint** and pick this repo (`render.yaml`). Set:
-   - `DATABASE_URL`: the Neon connection string.
-   - `CLIENT_URL`: your Vercel URL.
-   - `ADMIN_EMAIL` and `ADMIN_PASSWORD`: the main store's admin account.
-   - `JWT_SECRET` is generated for you.
-3. **Vercel:** import the repo with the root directory set to `client`, put your Render URL in place of `YOUR-API` in `client/vercel.json`, and deploy.
+Everything below runs on free plans.
 
-> On Render's free plan the API sleeps after 15 minutes without traffic, so the first request after that can take about a minute.
+**1. Database on Neon**
+- Create a project. Pick the **Frankfurt** region, or whichever is closest to your users.
+- Click **Connect**, turn on **Connection pooling**, click **Show password**, and copy the connection string.
+- Remove `&channel_binding=require` from the end, so it ends with `?sslmode=require`.
+
+**2. API on Render**
+- Choose **New → Blueprint** and pick this repo. `render.yaml` sets up the service (`server/` folder, Frankfurt region, free plan, health check).
+- Fill in:
+  - `DATABASE_URL`: the Neon string from step 1.
+  - `CLIENT_URL`: your Vercel URL, exactly, like `https://your-app.vercel.app` with no slash at the end.
+  - `ADMIN_EMAIL` and `ADMIN_PASSWORD`: optional. Set them only if you want an admin login for the main store; the demo works without them.
+  - `JWT_SECRET` is generated for you.
+- On first start the API creates its tables and seeds the store.
+
+**3. Frontend on Vercel**
+- In `client/vercel.json`, point the `/api` rewrite at your Render URL.
+- Import the repo with **Root Directory** set to `client`.
+
+**Check it:** open `https://your-app.vercel.app/api/health`. If you get `{"ok":true,…}`, the browser → Vercel → Render → Neon chain works.
+
+| Problem | Fix |
+| --- | --- |
+| `password authentication failed` in the Render logs | The connection string has a placeholder or hidden password. Copy it again from Neon with **Show password**. |
+| Sign-in or checkout returns `bad_origin` | `CLIENT_URL` doesn't exactly match the site's address. |
+| `/api/health` shows the site's 404 page | Vercel hasn't redeployed with the updated `vercel.json`. |
+| First request takes ~1 minute | Normal on Render's free plan: the API sleeps after 15 idle minutes. |
 
 ---
 
-Built by [Mariam Hussein](https://www.mariam-hussein.website)
+<div align="center">
+
+Designed and built by **[Mariam Hussein](https://www.mariam-hussein.website)**
+
+<sub>The brand and products are fictional, and the product and fabric photos are AI-generated.</sub>
+
+</div>
