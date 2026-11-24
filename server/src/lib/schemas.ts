@@ -27,6 +27,14 @@ export const CheckoutInput = z.object({
   city: text(60).min(2),
   address: text(200).min(5),
   payment: z.enum(["cod", "card"]).default("cod"),
+  email: z.email().trim().toLowerCase().max(160).optional(),
+  card: z
+    .object({
+      number: z.string().transform((value) => value.replace(/[\s-]/g, "")).pipe(z.string().regex(/^\d{12,19}$/, "card_number")),
+      expiry: z.string().trim().regex(/^(0[1-9]|1[0-2])\s*\/\s*\d{2}$/, "card_expiry"),
+      cvc: z.string().trim().regex(/^\d{3,4}$/, "card_cvc"),
+    })
+    .optional(),
 });
 
 const localized = (max: number, min = 1) => z.object({ en: text(max).min(min), ar: text(max).min(min) });

@@ -17,5 +17,7 @@ export const env = {
     .split(",")
     .map((value) => value.trim().replace(/\/$/, ""))
     .filter(Boolean),
+  resendApiKey: process.env.RESEND_API_KEY ?? "",
+  emailFrom: process.env.EMAIL_FROM || "Khayt <onboarding@resend.dev>",
   trustProxy: Number(process.env.TRUST_PROXY ?? 1),
 };

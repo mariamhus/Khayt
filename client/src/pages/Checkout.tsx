@@ -18,7 +18,7 @@ export function Checkout() {
   const lines = useCart();
   const navigate = useNavigate();
   const client = useQueryClient();
-  const [form, setForm] = useState({ name: me.data?.name ?? "", phone: "", city: "", address: "", payment: "cod" as "cod" | "card" });
+  const [form, setForm] = useState({ name: me.data?.name ?? "", email: me.data && !me.data.isDemo ? me.data.email : "", phone: "", city: "", address: "", payment: "cod" as "cod" | "card", cardNumber: "", cardExpiry: "", cardCvc: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const sum = totals(lines, SHIPPING);
@@ -46,6 +46,12 @@ export function Checkout() {
     if (!valid(form.phone)) next.phone = t.checkout.errors.phone;
     if (form.city.trim().length < 2) next.city = t.checkout.errors.city;
     if (form.address.trim().length < 5) next.address = t.checkout.errors.address;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) next.email = t.checkout.errors.email;
+    if (form.payment === "card") {
+      if (!/^\d{12,19}$/.test(form.cardNumber.replace(/[\s-]/g, ""))) next.cardNumber = t.checkout.errors.cardNumber;
+      if (!/^(0[1-9]|1[0-2])\s*\/\s*\d{2}$/.test(form.cardExpiry.trim())) next.cardExpiry = t.checkout.errors.cardExpiry;
+      if (!/^\d{3,4}$/.test(form.cardCvc.trim())) next.cardCvc = t.checkout.errors.cardCvc;
+    }
     setErrors(next);
     const first = Object.keys(next)[0];
     if (first) {
@@ -54,7 +60,9 @@ export function Checkout() {
     }
     setBusy(true);
     try {
-      const { order } = await api<{ order: Order }>("/orders", { method: "POST", body: { ...form, items: lines.map((line) => ({ productId: line.productId, color: line.color.key, size: line.size, quantity: line.quantity })) } });
+      const { cardNumber, cardExpiry, cardCvc, ...details } = form;
+      const card = form.payment === "card" ? { number: cardNumber, expiry: cardExpiry, cvc: cardCvc } : undefined;
+      const { order } = await api<{ order: Order }>("/orders", { method: "POST", body: { ...details, email: form.email.trim(), card, items: lines.map((line) => ({ productId: line.productId, color: line.color.key, size: line.size, quantity: line.quantity })) } });
       clearCart();
       client.invalidateQueries({ queryKey: ["orders"] });
       client.invalidateQueries({ queryKey: ["products"] });
@@ -65,6 +73,8 @@ export function Checkout() {
       if (failure instanceof ApiError && failure.code === "cart_changed") {
         applyProblems((failure.details?.problems as never) ?? []);
         setErrors({ form: t.checkout.errors.cart_changed });
+      } else if (failure instanceof ApiError && (failure.code === "card_declined" || failure.code === "card_expired" || failure.code === "card_not_test")) {
+        setErrors({ form: t.checkout.errors[failure.code] });
       } else setErrors({ form: t.checkout.errors.generic });
       setBusy(false);
     }
@@ -79,6 +89,9 @@ export function Checkout() {
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
             <Field id="c-name" label={t.checkout.name} error={errors.name}>
               <input id="c-name" className="field" value={form.name} onChange={set("name")} autoComplete="name" maxLength={80} aria-invalid={Boolean(errors.name)} />
+            </Field>
+            <Field id="c-email" label={t.checkout.email} error={errors.email} hint={t.checkout.emailHint}>
+              <input id="c-email" type="email" className="field rtl:text-right" dir="ltr" value={form.email} onChange={set("email")} autoComplete="email" maxLength={160} aria-invalid={Boolean(errors.email)} />
             </Field>
             <Field id="c-phone" label={t.checkout.phone} error={errors.phone} hint={t.checkout.phoneHint}>
               <input id="c-phone" className="field rtl:text-right" dir="ltr" inputMode="tel" value={form.phone} onChange={set("phone")} autoComplete="tel" maxLength={20} placeholder="010 1234 5678" aria-invalid={Boolean(errors.phone)} />
@@ -113,6 +126,22 @@ export function Checkout() {
               </label>
             ))}
           </div>
+          {form.payment === "card" && (
+            <div className="mt-5">
+              <div className="grid gap-4 sm:grid-cols-[1fr_9rem_6rem]">
+                <Field id="c-cardNumber" label={t.checkout.cardNumber} error={errors.cardNumber}>
+                  <input id="c-cardNumber" className="field rtl:text-right" dir="ltr" inputMode="numeric" autoComplete="cc-number" value={form.cardNumber} onChange={set("cardNumber")} maxLength={23} placeholder="4242 4242 4242 4242" aria-invalid={Boolean(errors.cardNumber)} />
+                </Field>
+                <Field id="c-cardExpiry" label={t.checkout.cardExpiry} error={errors.cardExpiry}>
+                  <input id="c-cardExpiry" className="field rtl:text-right" dir="ltr" inputMode="numeric" autoComplete="cc-exp" value={form.cardExpiry} onChange={set("cardExpiry")} maxLength={7} placeholder="12/30" aria-invalid={Boolean(errors.cardExpiry)} />
+                </Field>
+                <Field id="c-cardCvc" label={t.checkout.cardCvc} error={errors.cardCvc}>
+                  <input id="c-cardCvc" className="field rtl:text-right" dir="ltr" inputMode="numeric" autoComplete="cc-csc" value={form.cardCvc} onChange={set("cardCvc")} maxLength={4} placeholder="123" aria-invalid={Boolean(errors.cardCvc)} />
+                </Field>
+              </div>
+              <p className="mt-3 text-xs text-soft">{t.checkout.testCards}</p>
+            </div>
+          )}
         </fieldset>
       </div>
       <aside className="lg:sticky lg:top-24 lg:self-start">

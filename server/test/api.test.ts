@@ -104,7 +104,13 @@ describe("checkout", () => {
 
   it("gives free shipping over the threshold and marks card orders paid", async () => {
     const { product, level } = await variant(shopper, "satin-puff-dress");
-    const res = await shopper.post("/api/orders").send({ ...address, payment: "card", items: [{ productId: product.id, color: level.color, size: level.size, quantity: 1 }] });
+    const items = [{ productId: product.id, color: level.color, size: level.size, quantity: 1 }];
+    expect((await shopper.post("/api/orders").send({ ...address, payment: "card", items })).body.error.code).toBe("card_required");
+    const declined = await shopper.post("/api/orders").send({ ...address, payment: "card", items, card: { number: "4000 0000 0000 0002", expiry: "12/39", cvc: "123" } });
+    expect(declined.status).toBe(402);
+    expect(declined.body.error.code).toBe("card_declined");
+    expect((await shopper.post("/api/orders").send({ ...address, payment: "card", items, card: { number: "4242 4242 4242 4242", expiry: "01/20", cvc: "123" } })).body.error.code).toBe("card_expired");
+    const res = await shopper.post("/api/orders").send({ ...address, payment: "card", email: "shopper@example.com", items, card: { number: "4242 4242 4242 4242", expiry: "12/39", cvc: "123" } });
     expect(res.body.order).toMatchObject({ number: "KH-10002", status: "paid", shipping: 0, total: 265_000 });
   });
 
