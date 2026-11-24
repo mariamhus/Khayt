@@ -12,8 +12,141 @@
         if (localStorage.getItem("khayt:lang") === "ar") { document.documentElement.lang = "ar"; document.documentElement.dir = "rtl"; }
       } catch (e) {}
     </script>
+    <style>
+      /* Needle-and-thread loader, drawn from #kn-tpl. Used by the splash below and by <Spinner /> in the app. */
+      .kn { display: block; width: 100%; height: auto; overflow: visible; direction: ltr; }
+      .kn * { transform-box: view-box; }
+      .kn-all { animation: kn-fade 4s ease-in-out infinite; }
+      .kn-travel { transform: translate(38px, 46px); animation: kn-travel 4s infinite; }
+      .kn-bob { animation: kn-bob 4s ease-in-out infinite; }
+      .kn-tilt { animation: kn-tilt 4s cubic-bezier(.5, 0, .2, 1) infinite; }
+      .kn-draw { stroke-dasharray: 150; stroke-dashoffset: 150; animation: kn-draw 4s cubic-bezier(.45, 0, .2, 1) infinite; }
+      .kn-sewn { width: 0; animation: kn-sewn 4s step-end infinite; }
+      @keyframes kn-fade { 0% { opacity: 0 } 5%, 92% { opacity: 1 } 100% { opacity: 0 } }
+      @keyframes kn-draw { 0%, 4% { stroke-dashoffset: 150 } 26%, 100% { stroke-dashoffset: 0 } }
+      @keyframes kn-tilt { 0%, 27% { transform: rotate(0deg) } 37%, 100% { transform: rotate(-38deg) } }
+      @keyframes kn-travel { 0%, 38% { transform: translate(38px, 46px); animation-timing-function: linear } 90%, 100% { transform: translate(188px, 46px) } }
+      @keyframes kn-bob {
+        0%, 38%, 48.4%, 58.8%, 69.2%, 79.6%, 90%, 100% { transform: translateY(0) }
+        43.2%, 53.6%, 64%, 74.4%, 84.8% { transform: translateY(15px) }
+      }
+      @keyframes kn-sewn { 0% { width: 0 } 45% { width: 26px } 55.4% { width: 56px } 65.8% { width: 86px } 76.2% { width: 116px } 86.6%, 100% { width: 146px } }
+      @media (prefers-reduced-motion: reduce) {
+        .kn-all, .kn-travel, .kn-bob, .kn-tilt, .kn-draw, .kn-sewn { animation: none }
+        .kn-draw { stroke-dashoffset: 0 }
+        .kn-tilt { transform: rotate(-38deg) }
+        .kn-travel { transform: translate(188px, 46px) }
+        .kn-sewn { width: 146px }
+      }
+
+      #splash { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; background: #f3eee4; color: #1f1b17; transition: opacity .5s ease, visibility .5s; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+      #splash.done { opacity: 0; visibility: hidden; }
+      #splash .inner { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 16px; }
+      #splash .art { width: min(280px, 80vw); }
+      #splash .brand { font-size: 28px; font-weight: 700; letter-spacing: .04em; }
+      #splash .note { font-size: 13px; color: #6a625a; min-height: 1.4em; text-align: center; }
+    </style>
   </head>
   <body>
+    <!-- The one drawing of the loader. "__ID__" is swapped for a unique suffix each time it's stamped out. -->
+    <template id="kn-tpl">
+      <svg class="kn" viewBox="0 0 240 130" aria-hidden="true">
+        <defs>
+          <linearGradient id="kn-steel-__ID__" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0" stop-color="#3d424a" />
+            <stop offset=".3" stop-color="#a9b0ba" />
+            <stop offset=".48" stop-color="#f5f7fa" />
+            <stop offset=".66" stop-color="#8d949e" />
+            <stop offset="1" stop-color="#2f343b" />
+          </linearGradient>
+          <pattern id="kn-weave-__ID__" width="3" height="3" patternUnits="userSpaceOnUse">
+            <rect width="3" height="3" fill="#efe6d5" />
+            <path d="M0 .75H3M0 2.25H3" stroke="#e3d6bf" stroke-width=".7" />
+            <path d="M.75 0V3M2.25 0V3" stroke="#f7f0e3" stroke-width=".5" />
+          </pattern>
+          <linearGradient id="kn-shade-__ID__" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0" stop-color="#fff" stop-opacity=".55" />
+            <stop offset=".25" stop-color="#fff" stop-opacity="0" />
+            <stop offset="1" stop-color="#5a4630" stop-opacity=".16" />
+          </linearGradient>
+          <filter id="kn-shadow-__ID__" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="1.5" dy="2.5" stdDeviation="1.4" flood-color="#3b2c1c" flood-opacity=".28" />
+          </filter>
+          <filter id="kn-soft-__ID__" x="-20%" y="-200%" width="140%" height="500%"><feGaussianBlur stdDeviation="2.5" /></filter>
+          <mask id="kn-mask-__ID__" maskUnits="userSpaceOnUse" x="-120" y="-120" width="240" height="240">
+            <path class="kn-draw" d="M -52 8 C -46 -38, -18 -46, 0 -34 C 7 -29, 10 -23, 10 -14" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" />
+          </mask>
+          <clipPath id="kn-clip-__ID__"><rect class="kn-sewn" x="56" y="80" height="24" /></clipPath>
+        </defs>
+
+        <g class="kn-all">
+          <!-- fabric shadow -->
+          <rect x="30" y="110" width="184" height="6" rx="3" fill="#3b2c1c" opacity=".18" filter="url(#kn-soft-__ID__)" />
+
+          <!-- needle with thread through the eye -->
+          <g class="kn-travel"><g class="kn-bob"><g class="kn-tilt">
+            <g mask="url(#kn-mask-__ID__)">
+              <path d="M -52 8 C -46 -38, -18 -46, 0 -34 C 7 -29, 10 -23, 10 -14" fill="none" stroke="#9c4329" stroke-width="2.6" stroke-linecap="round" />
+              <path d="M -52 8 C -46 -38, -18 -46, 0 -34 C 7 -29, 10 -23, 10 -14" fill="none" stroke="#d47a59" stroke-opacity=".75" stroke-width="1.5" stroke-dasharray=".9 1.3" stroke-linecap="round" />
+            </g>
+            <g filter="url(#kn-shadow-__ID__)">
+              <path d="M -2.5 -38 Q -2.5 -42.5 0 -42.5 Q 2.5 -42.5 2.5 -38 L 2.2 16 Q 1.7 29 0 41 Q -1.7 29 -2.2 16 Z M 0 -39.5 Q -1 -39.5 -1 -37 L -1 -30 Q -1 -28 0 -28 Q 1 -28 1 -30 L 1 -37 Q 1 -39.5 0 -39.5 Z" fill="url(#kn-steel-__ID__)" fill-rule="evenodd" />
+              <path d="M -.7 -25 L -.55 22" stroke="#fff" stroke-opacity=".8" stroke-width=".6" stroke-linecap="round" />
+            </g>
+            <!-- the bit of thread in front of the needle, so it reads as passing through the eye -->
+            <path d="M -1.6 -33.4 C -.6 -33.8, .6 -33.8, 1.6 -33" fill="none" stroke="#b14e30" stroke-width="2" stroke-linecap="round" mask="url(#kn-mask-__ID__)" />
+          </g></g></g>
+
+          <!-- fabric (drawn over the needle so the tip disappears into it) -->
+          <path d="M 24 86 Q 70 83.5 120 85 T 218 84.5 L 220 110 Q 120 112 22 110 Z" fill="url(#kn-weave-__ID__)" />
+          <path d="M 24 86 Q 70 83.5 120 85 T 218 84.5 L 220 110 Q 120 112 22 110 Z" fill="url(#kn-shade-__ID__)" />
+          <path d="M 24 86 Q 70 83.5 120 85 T 218 84.5" fill="none" stroke="#cdbb9c" stroke-width=".8" />
+
+          <!-- stitches, revealed one at a time as the needle comes back up -->
+          <g clip-path="url(#kn-clip-__ID__)">
+            <path d="M 60 94.6 H 78 M 90 94.6 H 108 M 120 94.6 H 138 M 150 94.6 H 168 M 180 94.6 H 198" stroke="#5a3a22" stroke-opacity=".22" stroke-width="2.6" stroke-linecap="round" />
+            <path d="M 60 93.2 H 78 M 90 93.2 H 108 M 120 93.2 H 138 M 150 93.2 H 168 M 180 93.2 H 198" stroke="#a5482c" stroke-width="2.6" stroke-linecap="round" />
+            <path d="M 60 93.2 H 78 M 90 93.2 H 108 M 120 93.2 H 138 M 150 93.2 H 168 M 180 93.2 H 198" stroke="#d47a59" stroke-opacity=".75" stroke-width="1.5" stroke-dasharray=".9 1.3" />
+            <g fill="#6b5236" opacity=".55">
+              <ellipse cx="58.5" cy="93.4" rx="1.4" ry=".9" /><ellipse cx="79.5" cy="93.4" rx="1.4" ry=".9" />
+              <ellipse cx="88.5" cy="93.4" rx="1.4" ry=".9" /><ellipse cx="109.5" cy="93.4" rx="1.4" ry=".9" />
+              <ellipse cx="118.5" cy="93.4" rx="1.4" ry=".9" /><ellipse cx="139.5" cy="93.4" rx="1.4" ry=".9" />
+              <ellipse cx="148.5" cy="93.4" rx="1.4" ry=".9" /><ellipse cx="169.5" cy="93.4" rx="1.4" ry=".9" />
+              <ellipse cx="178.5" cy="93.4" rx="1.4" ry=".9" /><ellipse cx="199.5" cy="93.4" rx="1.4" ry=".9" />
+            </g>
+          </g>
+        </g>
+      </svg>
+    </template>
+
+    <div id="splash" role="status" aria-live="polite">
+      <div class="inner">
+        <div class="art" id="splash-art"></div>
+        <div class="brand">Khayt</div>
+        <div class="note" id="splash-note"></div>
+      </div>
+    </div>
+    <script>
+      (function () {
+        document.getElementById("splash-art").innerHTML = document.getElementById("kn-tpl").innerHTML.replace(/__ID__/g, "splash");
+        var ar = document.documentElement.lang === "ar";
+        var note = document.getElementById("splash-note");
+        note.textContent = ar ? "بنجهّز المحل…" : "Threading the needle…";
+        // The free API server can take a while to wake up; say so instead of looking stuck.
+        setTimeout(function () { note.textContent = ar ? "السيرفر بيصحى، ثواني بس…" : "Waking up the server, almost there…"; }, 5000);
+        var shown = Date.now();
+        window.hideSplash = function () {
+          var wait = Math.max(0, 2000 - (Date.now() - shown));
+          setTimeout(function () {
+            var el = document.getElementById("splash");
+            if (!el) return;
+            el.classList.add("done");
+            setTimeout(function () { el.remove(); }, 600);
+          }, wait);
+        };
+        setTimeout(window.hideSplash, 20000);
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

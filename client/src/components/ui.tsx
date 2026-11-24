@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useId, useMemo, useRef, type ReactNode } from "react";
 import { X } from "lucide-react";
 import type { OrderStatus } from "../lib/api";
 import { useI18n } from "../lib/i18n";
@@ -68,11 +68,19 @@ export function Field({ label, error, hint, children, id }: { label: string; err
   );
 }
 
+/** Thread goes through the needle's eye, then the needle sews a row of stitches. Styles live in index.html. */
+export function NeedleLoader({ width = 240 }: { width?: number }) {
+  const id = useId().replace(/[^a-zA-Z0-9_-]/g, "");
+  // The drawing lives once in index.html (#kn-tpl) so the splash and this stay identical.
+  const html = useMemo(() => document.getElementById("kn-tpl")?.innerHTML.replace(/__ID__/g, id) ?? "", [id]);
+  return <span className="block" style={{ width }} aria-hidden dangerouslySetInnerHTML={{ __html: html }} />;
+}
+
 export function Spinner({ label }: { label?: string }) {
   const { t } = useI18n();
   return (
     <div className="flex flex-col items-center gap-3 py-16 text-sm text-faint" role="status">
-      <span className="size-6 animate-spin rounded-full border-2 border-line-strong border-t-clay" />
+      <NeedleLoader width={150} />
       <span className={label ? "" : "sr-only"}>{label ?? t.common.loading}</span>
     </div>
   );

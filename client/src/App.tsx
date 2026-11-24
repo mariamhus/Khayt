@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { createBrowserRouter, Navigate, Outlet, ScrollRestoration, useLocation } from "react-router";
 import { useMe } from "./lib/queries";
 import { Layout } from "./components/Layout";
@@ -19,6 +19,11 @@ const AdminProductEdit = lazy(() => import("./pages/admin/AdminProductEdit"));
 const AdminOrders = lazy(() => import("./pages/admin/AdminOrders"));
 
 function Root() {
+  const me = useMe();
+  const ready = !me.isPending;
+  useEffect(() => {
+    if (ready) (window as { hideSplash?: () => void }).hideSplash?.();
+  }, [ready]);
   return (
     <>
       <ScrollRestoration />
